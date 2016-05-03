@@ -27,7 +27,7 @@ export var InnerSlider = React.createClass({
       mounted: true
     });
     var lazyLoadedList = [];
-    for (var i = 0; i < this.props.children.length; i++) {
+    for (var i = 0; i < React.Children.count(this.props.children); i++) {
       if (i >= this.state.currentSlide && i < this.state.currentSlide + this.props.slidesToShow) {
         lazyLoadedList.push(i);
       }
@@ -56,14 +56,19 @@ export var InnerSlider = React.createClass({
       window.detachEvent('onresize', this.onWindowResized);
     }
     if (this.state.autoPlayTimer) {
-      window.clearTimeout(this.state.autoPlayTimer);
+      window.clearInterval(this.state.autoPlayTimer);
     }
   },
   componentWillReceiveProps: function(nextProps) {
     if (this.props.slickGoTo != nextProps.slickGoTo) {
-      this.setState({currentSlide: nextProps.slickGoTo});
+      this.changeSlide({
+          message: 'index',
+          index: nextProps.slickGoTo,
+          currentSlide: this.state.currentSlide
+      });
+    } else {
+      this.update(nextProps);
     }
-    this.update(nextProps);
   },
   componentDidUpdate: function () {
     this.adaptHeight();
@@ -125,7 +130,7 @@ export var InnerSlider = React.createClass({
     }
 
     return (
-      <div className={className}>
+      <div className={className} onMouseEnter={this.onInnerSliderEnter} onMouseLeave={this.onInnerSliderLeave}>
         <div
           ref='list'
           className="slick-list"

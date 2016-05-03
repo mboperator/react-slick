@@ -79,7 +79,7 @@ var helpers = {
     var targetLeft, currentLeft;
     var callback;
 
-    if (this.state.currentSlide === index) {
+    if (this.props.waitForAnimate && this.state.animating) {
       return;
     }
 
@@ -216,7 +216,7 @@ var helpers = {
 
       this.setState({
         animating: true,
-        currentSlide: targetSlide,
+        currentSlide: currentSlide,
         trackStyle: getTrackAnimateCSS(assign({left: targetLeft}, this.props, this.state))
       }, function () {
         ReactTransitionEvents.addEndEventListener(ReactDOM.findDOMNode(this.refs.track), callback);
@@ -247,20 +247,26 @@ var helpers = {
     return 'vertical';
   },
   autoPlay: function () {
+    if (this.state.autoPlayTimer) {
+      return;
+    }
     var play = () => {
       if (this.state.mounted) {
         var nextIndex = this.props.rtl ?
-          this.state.currentSlide - this.props.slidesToScroll:
-          this.state.currentSlide + this.props.slidesToScroll;
-
+        this.state.currentSlide - this.props.slidesToScroll:
+        this.state.currentSlide + this.props.slidesToScroll;
         this.slideHandler(nextIndex);
       }
     };
     if (this.props.autoplay) {
-      window.clearTimeout(this.state.autoPlayTimer);
       this.setState({
-        autoPlayTimer: window.setTimeout(play, this.props.autoplaySpeed)
+        autoPlayTimer: window.setInterval(play, this.props.autoplaySpeed)
       });
+    }
+  },
+  pause: function () {
+    if (this.state.autoPlayTimer) {
+      window.clearInterval(this.state.autoPlayTimer);
     }
   }
 };
